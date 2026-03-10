@@ -1,0 +1,51 @@
+[project]
+name = "cc-python-protobuf-csfle-example"
+version = "0.01.00.00"
+description = "Confluent Cloud Python Protobuf CSFLE Example"
+readme = "README.md"
+requires-python = ">=3.13"
+dependencies = [
+    "boto3>=1.38.0",
+    "confluent-kafka>=2.13.2",
+    "cryptography>=44.0.0",
+    "dotenv>=0.9.9",
+    "protobuf>=7.34.0",
+    "pytest>=9.0.2",
+    "python-dotenv>=1.2.2",
+    "requests>=2.32.5",
+]
+
+[tool.setuptools]
+packages = ["src"]
+
+# Logging configuration
+[tool.logging]
+version = 1
+disable_existing_loggers = false
+
+[tool.logging.formatters.default]
+format = "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
+datefmt = "%Y-%m-%d %H:%M:%S"
+
+[tool.logging.handlers.file]
+class = "logging.FileHandler"
+filename = "cc-python-protobuf-csfle-example.log"
+formatter = "default"
+level = "INFO"
+mode = "w"
+
+[tool.logging.handlers.console]
+class = "logging.StreamHandler"
+formatter = "default"
+level = "DEBUG"
+
+[tool.logging.loggers.root]
+level = "INFO"
+handlers = ["file", "console"]
+
+[tool.pytest.ini_options]
+pythonpath = ["src"]
+log_cli = 1
+log_cli_level = "INFO"
+log_cli_format = "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
+log_cli_date_format = "%Y-%m-%d %H:%M:%S"
