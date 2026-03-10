@@ -10,7 +10,6 @@ dependencies = [
     "cryptography>=44.0.0",
     "dotenv>=0.9.9",
     "protobuf>=7.34.0",
-    "pytest>=9.0.2",
     "python-dotenv>=1.2.2",
     "requests>=2.32.5",
 ]
@@ -42,10 +41,3 @@ level = "DEBUG"
 [tool.logging.loggers.root]
 level = "INFO"
 handlers = ["file", "console"]
-
-[tool.pytest.ini_options]
-pythonpath = ["src"]
-log_cli = 1
-log_cli_level = "INFO"
-log_cli_format = "%(asctime)s - %(levelname)s - %(funcName)s - %(message)s"
-log_cli_date_format = "%Y-%m-%d %H:%M:%S"

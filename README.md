@@ -20,7 +20,7 @@ cc-python-protobuf-csfle-example/
 │   ├── demos.py                     # All nine demo functions (demo_basic … demo_csfle)
 │   └── main.py                      # Thin entry point — wires config, SR client, and demo dispatch
 ├── run-all-demos.sh                 # Shell script — authenticates via AWS SSO and runs all demos in full mode
-├── pyproject.toml                   # Project metadata, dependencies, logging, pytest config
+├── pyproject.toml                   # Project metadata, dependencies, logging
 ├── uv.lock                          # Pinned dependency lockfile — commit this
 ├── .env                             # Credentials — NOT COMMITTED, loaded automatically by python-dotenv at startup
 ├── .gitignore                       # Ignore .env, .venv/, logs, __pycache__/, etc.
@@ -258,7 +258,6 @@ into a local `.venv`. No manual `pip install` is needed.
 | `requests` | 2.32.5 | Schema Registry REST API calls |
 | `python-dotenv` | 1.2.2 | Auto-loads `.env` via `load_dotenv()` at startup |
 | `dotenv` | 0.9.9 | dotenv compatibility shim |
-| `pytest` | 9.0.2 | Test runner |
 
 > `confluent-kafka` is imported inside a `try/except` at startup; if it is
 > absent the app still runs normally in `--mode schema-only`.
@@ -640,19 +639,6 @@ first/only message" — the common case for all demos here.
 `encode()` packs with `struct.pack(">bI", 0x00, schema_id) + b"\x00"`.
 `decode_header()` validates the magic byte, unpacks the schema ID, then skips
 the message-index varint array via `_read_varint()` before returning the payload.
-
----
-
-## Running tests
-
-```bash
-uv run pytest        # run all tests
-uv run pytest -v     # verbose output
-```
-
-pytest is configured in `pyproject.toml` under `[tool.pytest.ini_options]`.
-`pythonpath = ["src"]` adds `src/` to the import path automatically.
-`log_cli = 1` enables live `INFO`-level log output during test runs.
 
 ---
 
