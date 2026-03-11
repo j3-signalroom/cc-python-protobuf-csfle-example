@@ -560,7 +560,10 @@ This envelope is what makes Schema Registry-aware consumers (in any language) ab
 ## **2.0 Running the demos**
 
 ```bash
-./run-all-demos.sh --profile=<SSO_PROFILE_NAME>
+./run-demo.sh --profile=<SSO_PROFILE_NAME> \
+              --mode=<schema-only|full> \
+              [--demo=<all|basic|delete|evolution|oneof|null|compat|types|strategies|csfle>] \
+              [--run-id=<any string, e.g. "test1">]
 ```
 
 | Argument | Required | Choice | Default | Description |
@@ -572,7 +575,7 @@ This envelope is what makes Schema Registry-aware consumers (in any language) ab
 
 > All required flags must be provided; if a required flag is missing, the script exits with code `85`.
 
-In `--mode full`, the app calls `ensure_topics()` via `AdminClient` to pre-create all five required topics before any produce calls.  Confluent Cloud mandates `replication_factor=3`; existing topics are silently skipped.  Schema registration and Kafka produce/consume are fully integrated in both modes, but only in `full` mode do the messages actually go to Kafka. In `schema-only` mode, the app still registers schemas and prints the resulting wire-format bytes to the console, but does not interact with Kafka at all.
+In `--mode=full`, the app calls `ensure_topics()` via `AdminClient` to pre-create all five required topics before any produce calls.  Confluent Cloud mandates `replication_factor=3`; existing topics are silently skipped.  Schema registration and Kafka produce/consume are fully integrated in both modes, but only in `full` mode do the messages actually go to Kafka. In `schema-only` mode, the app still registers schemas and prints the resulting wire-format bytes to the console, but does not interact with Kafka at all.
 
 **Prerequisites:** AWS CLI v2, `aws2-wrap` (`pip install aws2-wrap`), and a configured AWS SSO profile with access to the KMS key.
 
