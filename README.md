@@ -26,6 +26,8 @@ The project talks to a Confluent Cloud Schema Registry over the SR REST API and,
         + [1.8.8 `demos.py`](#188-demospy)
     + [1.9 Logging](#19-logging)
     + [1.10 Wire format](#110-wire-format)
+        - [1.10.1 Why a message index?](#1101-why-a-message-index)
+        - [1.10.2 What the code does](#1102-what-the-code-does)
 + [2.0 Running the demos](#20-running-the-demos)
     + [2.1 Demos](#21-demos)
         + [2.1.1 Demo 1 — Basic Serializer & Deserializer (`--demo basic`)](#211-demo-1--basic-serializer--deserializer---demo-basic)
