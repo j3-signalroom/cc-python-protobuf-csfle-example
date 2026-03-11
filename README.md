@@ -1,7 +1,7 @@
 # Confluent Cloud Python Protobuf CSFLE (Client-Side Field-Level Encryption) Example
 A hands-on Python demonstration of the **Confluent Cloud Protobuf Schema Serializer & Deserializer**, covering every major concept from the official [Confluent Protobuf SerDes documentation](https://docs.confluent.io/cloud/current/sr/fundamentals/serdes-develop/serdes-protobuf.html).
 
-The project talks to a Confluent Cloud Schema Registry over the SR REST API and, when run in full mode, produces and consumes messages on a Kafka cluster via `confluent-kafka`. No `protoc` compiler or generated stubs are required — schemas are defined as Python dataclasses, compiled at runtime into `google.protobuf` `FileDescriptorProto` objects, and serialized to **Protobuf binary** using `google.protobuf.message_factory`.
+The project talks to a Confluent Cloud Schema Registry over the SR REST API and, when run in `full` mode, produces and consumes messages on a Kafka cluster via `confluent-kafka`. No `protoc` compiler or generated stubs are required — schemas are defined as Python dataclasses, compiled at runtime into `google.protobuf` `FileDescriptorProto` objects, and serialized to **Protobuf binary** using `google.protobuf.message_factory`.
 
 ---
 
@@ -64,7 +64,7 @@ cc-python-protobuf-csfle-example/
 │   ├── field_encryption.py          # FieldEncryptor & get_encrypted_fields() — AES-256-GCM CSFLE
 │   ├── demos.py                     # All nine demo functions (demo_basic … demo_csfle)
 │   └── main.py                      # Thin entry point — wires config, SR client, and demo dispatch
-├── run-all-demos.sh                 # Shell script — authenticates via AWS SSO and runs all demos in full mode
+├── run-demo.sh                      # Shell script — authenticates via AWS SSO and runs all demos in `full` mode
 ├── pyproject.toml                   # Project metadata, dependencies, logging
 ├── uv.lock                          # Pinned dependency lockfile — commit this
 ├── .env                             # Credentials — NOT COMMITTED, loaded automatically by python-dotenv at startup
@@ -612,7 +612,7 @@ Builds two `ProtoMessage` objects (`OtherRecord` and `MyRecord`), registers
 them in dependency order (referenced schema first), and serializes a message
 into the Confluent wire format. Prints the magic byte (`0x00`), schema ID, and
 full hex payload. Deserializes back with `KafkaProtobufDeserializer` using
-`specific_type=my_record`. In full mode the wire bytes are produced to and
+`specific_type=my_record`. In `full` mode the wire bytes are produced to and
 consumed from Kafka.
 
 **Topics:** `testproto-{run_id}`  
@@ -630,7 +630,7 @@ correct order: delete the referencing subject first, then the referenced one.
 Registers a v1 `MyRecord` schema (`id`, `amount`), sets `BACKWARD_TRANSITIVE`
 compatibility on the subject via `PUT /config/{subject}`, then registers v2
 with an added `customer_id` field. Calls `test_compatibility()` before
-registration to verify safety. In full mode, produces both schema versions to
+registration to verify safety. In `full` mode, produces both schema versions to
 the same topic and consumes them.
 
 **Topics:** `transactions-proto-{run_id}`  
@@ -724,7 +724,7 @@ done
 - **Confluent Cloud requires `replication_factor=3`.** `ensure_topics()` always
   passes this value; any other value will be rejected by the cluster.
 - **`BACKWARD_TRANSITIVE` is the right default for Protobuf.** Unlike Avro,
-  adding a new *message type* (not just a field) breaks FORWARD compatibility.
+  adding a new *message type* (not just a field) breaks `FORWARD` compatibility.
 - **`uv.lock` should be committed.** It pins every transitive dependency for
   fully reproducible installs across machines and CI.
 - **Real Protobuf binary encoding.** `ProtoMessage.serialize()` and `deserialize()`
