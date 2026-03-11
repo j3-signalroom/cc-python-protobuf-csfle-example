@@ -490,18 +490,29 @@ def demo_csfle(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str, aw
     # ── 2. Define a schema with sensitive fields ───────────────────────
     if use_protoc:
         from compiled_protobuf_helpers import load_compiled_message
-        sensitive_record = load_compiled_message("SensitiveRecord.proto", "SensitiveRecord")
+        #sensitive_record = load_compiled_message("SensitiveRecord.proto", "SensitiveRecord")
+        sensitive_record = load_compiled_message("User.proto", "User")
     else:
+        # sensitive_record = ProtoMessage(
+        #     name="SensitiveRecord",
+        #     fields=[
+        #         ProtoField("id",     "string", 1),
+        #         ProtoField("name",   "string", 2),
+        #         ProtoField("ssn",    "string", 3, tags="PII"),
+        #         ProtoField("email",  "string", 4, tags="PII"),
+        #         ProtoField("amount", "float",  5),
+        #     ],
+        # )
         sensitive_record = ProtoMessage(
-            name="SensitiveRecord",
+            name="User",
             fields=[
-                ProtoField("id",     "string", 1),
+                ProtoField("id",     "int32", 1),
                 ProtoField("name",   "string", 2),
-                ProtoField("ssn",    "string", 3, tags="PII"),
-                ProtoField("email",  "string", 4, tags="PII"),
-                ProtoField("amount", "float",  5),
+                ProtoField("email",  "string", 3, tags="PII"),
             ],
         )
+
+
 
     logger.info("\nSchema with sensitive fields:")
     logger.info(sensitive_record.to_schema_string())
@@ -568,12 +579,17 @@ def demo_csfle(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str, aw
     protobuf_deserializer = ProtobufDeserializer(msg_cls, {'use.deprecated.format': False}, confluent_sr)
 
     # ── 8. Serialize — FieldEncryptionExecutor encrypts PII fields ────
+    # original = {
+    #     "id":     "user-001",
+    #     "name":   "Alice Smith",
+    #     "ssn":    "123-45-6789",
+    #     "email":  "alice@example.com",
+    #     "amount": 500.0,
+    # }
     original = {
-        "id":     "user-001",
+        "id":     1,
         "name":   "Alice Smith",
-        "ssn":    "123-45-6789",
         "email":  "alice@example.com",
-        "amount": 500.0,
     }
 
     logger.info(f"\nOriginal data:  {original}")
@@ -581,14 +597,16 @@ def demo_csfle(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str, aw
     ser_ctx      = SerializationContext(topic, MessageField.VALUE)
     msg_instance = ParseDict(original, msg_cls())
     wire         = protobuf_serializer(msg_instance, ser_ctx)
-    logger.info(f"Wire bytes:     {len(wire)} bytes  (ssn + email AES-256-GCM encrypted)")
+    #logger.info(f"Wire bytes:     {len(wire)} bytes  (ssn + email AES-256-GCM encrypted)")
+    logger.info(f"Wire bytes:     {len(wire)} bytes  (name AES-256-GCM encrypted)")
 
     # ── 9. Deserialize — FieldEncryptionExecutor decrypts PII fields ──
     deser_ctx      = SerializationContext(topic, MessageField.VALUE)
     decrypted_msg  = protobuf_deserializer(wire, deser_ctx)
     decrypted_view = MessageToDict(decrypted_msg, preserving_proto_field_name=True)
     logger.info(f"\nDecrypted:      {decrypted_view}")
-    logger.info("  ↑ 'ssn' and 'email' restored to plaintext by WRITEREAD rule")
+    #logger.info("  ↑ 'ssn' and 'email' restored to plaintext by WRITEREAD rule")
+    logger.info("  ↑ 'name' restored to plaintext by WRITEREAD rule")
 
     # ── 10. Kafka round-trip (if --mode full) ─────────────────────────
     if kafka_cfg:
