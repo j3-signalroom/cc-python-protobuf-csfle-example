@@ -528,9 +528,9 @@ def demo_csfle(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str, aw
   │  CSFLE Architecture (AWS KMS)                                      │
   │                                                                    │
   │  Schema Registry stores:                                           │
-  │    • schema  — Protobuf definition (original field types)          │
+  │    • schema   — Protobuf definition (original field types)         │
   │    • metadata — field-level tags  (e.g. "ssn" → PII)               │
-  │    • ruleSet — ENCRYPT transform rules matching tags               │
+  │    • ruleSet  — ENCRYPT transform rules matching tags              │
   │                                                                    │
   │  DEK Registry (part of Schema Registry) stores:                    │
   │    • KEK metadata — name, KMS type, KMS key ARN                    │

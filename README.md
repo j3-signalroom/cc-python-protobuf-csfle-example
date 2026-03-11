@@ -505,7 +505,7 @@ The fallback log filename and format are defined as typed `Final` constants in
 
 ### **1.10 Wire format**
 
-Every serialized Kafka message uses the Confluent wire format:
+Every serialized Kafka message uses the Confluent wire format— the envelope that wraps protobuf binary before it goes onto a Kafka topic:
 
 ```
 ┌──────────┬──────────────────────────┬──────────────────────┬───────────────────────┐
@@ -515,13 +515,43 @@ Every serialized Kafka message uses the Confluent wire format:
 └──────────┴──────────────────────────┴──────────────────────┴───────────────────────┘
 ```
 
-The message-index array identifies which message in the `.proto` file is encoded.
-An empty array (length = 0, encoded as the single byte `0x00`) means "use the
-first/only message" — the common case for all demos here.
+| Segment       | Bytes               | Purpose |
+|---------------|-------------------|---------|
+| Magic byte    | `0x00`              | Identifies this as a Confluent Schema Registry message |
+| Schema ID     | 4 bytes, big-endian | Points to the schema stored in Schema Registry |
+| Message index | Variable (varint-encoded) | Tells which message type in the .proto is encoded |
+| Payload       | Remaining bytes    | The actual protobuf binary |
 
-`encode()` packs with `struct.pack(">bI", 0x00, schema_id) + b"\x00"`.
-`decode_header()` validates the magic byte, unpacks the schema ID, then skips
-the message-index varint array via `_read_varint()` before returning the payload.
+#### **1.10.1 Why a message index?**
+A single `.proto` file (or schema) can define multiple message types:
+
+```
+message Customer { ... }   // index [0]
+message Product { ... }   // index [1]
+message Order { ... }    // index [2]
+```
+
+The message index tells the consumer which one was serialized. When there's only one message (the common case), the index is an empty array encoded as the single byte `0x00`.
+
+#### **1.10.2 What the code does**
+In [`schema_registry_client.py`](src/schema_registry_client.py):
+
+`encode()` builds the envelope:
+
+```
+struct.pack(">bI", 0x00, schema_id) + b"\x00" + payload
+             magic─┘     └─schema ID  └─message index └─payload
+```
+Then appends the protobuf binary after it.
+
+`decode_header()` does the reverse:
+
+- Validates the magic byte is `0x00`
+- Unpacks the 4-byte schema ID
+- Skips past the message-index varint array using `_read_varint()`
+- Returns the remaining bytes as the protobuf payload
+
+This envelope is what makes Schema Registry-aware consumers (in any language) able to look up the correct schema and deserialize the message automatically.
 
 ---
 
