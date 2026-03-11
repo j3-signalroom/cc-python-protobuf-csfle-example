@@ -610,3 +610,82 @@ def demo_csfle(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str, aw
   │    2. First encrypt → create_dek() → plaintext DEK returned        │
   │    3. Subsequent → get_dek() → encrypted DEK → KMS decrypt         │
   └────────────────────────────────────────────────────────────────────┘""")
+
+
+# ── Demo 10 ────────────────────────────────────────────────────────────────
+def demo_no_auto_register(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str, save_dir: str = "", use_protoc: bool = False) -> None:
+    section("10 · Manual Schema Registration (auto_register=False)")
+
+    if use_protoc:
+        from compiled_protobuf_helpers import load_compiled_message
+        invoice = load_compiled_message("Invoice.proto", "Invoice")
+    else:
+        invoice = ProtoMessage(
+            name="Invoice",
+            fields=[
+                ProtoField("invoice_id", "string", 1),
+                ProtoField("vendor",     "string", 2),
+                ProtoField("total",      "float",  3),
+            ],
+        )
+
+    logger.info("\nSchema:")
+    logger.info(invoice.to_schema_string())
+
+    if save_dir:
+        path = invoice.save_schema(save_dir)
+        logger.info(f"  Saved → {path}")
+
+    topic   = f"invoices-{run_id}"
+    subject = f"{topic}-value"
+
+    # ── Step 1: Manually register the schema ───────────────────────────
+    logger.info(f"\n[Step 1] Manually registering schema under subject '{subject}' …")
+    schema_id = sr.register(subject, invoice.to_schema_string())
+    logger.info(f"  Registered → schema_id={schema_id}")
+
+    # ── Step 2: Create serializer with auto_register=False ─────────────
+    logger.info("\n[Step 2] Creating serializer with auto_register=False …")
+    ser = KafkaProtobufSerializer(sr, auto_register=False)
+
+    data = {"invoice_id": "INV-2026-001", "vendor": "Acme Corp", "total": 1250.99}
+    logger.info(f"  Serializing: {data}")
+
+    wire = ser.serialize(topic, invoice, data)
+    logger.info(f"  Wire bytes: {len(wire)} bytes")
+
+    # ── Step 3: Deserialize to verify round-trip ───────────────────────
+    deser   = KafkaProtobufDeserializer(sr, specific_type=invoice)
+    decoded = deser.deserialize(wire)
+
+    if kafka_cfg:
+        kafka_produce(kafka_cfg, topic, "inv-001", wire)
+        raw = kafka_consume_one(kafka_cfg, topic, f"demo-no-auto-{run_id}")
+        decoded = deser.deserialize(raw) if raw else decoded
+        logger.info(f"\n  Consumed from Kafka: {decoded}")
+    else:
+        logger.info(f"\n  Decoded (wire-format only): {decoded}")
+
+    # ── Step 4: Show that unregistered subjects fail ───────────────────
+    logger.info("\n[Step 3] Demonstrating failure when subject is not pre-registered …")
+    unknown_topic = f"unknown-{run_id}"
+    ser_no_auto   = KafkaProtobufSerializer(sr, auto_register=False)
+    try:
+        ser_no_auto.serialize(unknown_topic, invoice, data)
+        logger.info("  (serialize succeeded unexpectedly)")
+    except RuntimeError as exc:
+        logger.info(f"  Expected error: {exc}")
+
+    logger.info("""
+  ┌────────────────────────────────────────────────────────────────────┐
+  │  auto_register=False                                               │
+  │                                                                    │
+  │  When disabled, the serializer does NOT register schemas.          │
+  │  Instead it calls GET /subjects/{subject}/versions/latest to       │
+  │  look up the schema_id for an already-registered schema.           │
+  │                                                                    │
+  │  Use this in production when:                                      │
+  │    • Schemas are managed via CI/CD pipelines                       │
+  │    • Producers should not have write access to Schema Registry     │
+  │    • You want strict governance over schema changes                │
+  └────────────────────────────────────────────────────────────────────┘""")

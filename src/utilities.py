@@ -105,7 +105,8 @@ def parse_args() -> argparse.Namespace:
     p.add_argument(
         "--demo",
         choices=["all", "basic", "delete", "evolution", "oneof",
-                 "null", "compat", "types", "strategies", "csfle"],
+                 "null", "compat", "types", "strategies", "csfle",
+                 "no-auto-register"],
         default="all",
     )
     p.add_argument(

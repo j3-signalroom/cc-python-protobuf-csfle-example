@@ -48,6 +48,7 @@ Both modes satisfy the `ProtoSchema` protocol and are interchangeable in the Ser
         + [2.1.7 Demo 7 — Schema Types (`--demo types`)](#217-demo-7--schema-types--return-types---demo-types)
         + [2.1.8 Demo 8 — Subject Name Strategies (`--demo strategies`)](#218-demo-8--subject-name-strategies---demo-strategies)
         + [2.1.9 Demo 9 — Client-Side Field Level Encryption (`--demo csfle`)](#219-demo-9--client-side-field-level-encryption---demo-csfle)
+        + [2.1.10 Demo 10 — Manual Schema Registration (`--demo no-auto-register`)](#2110-demo-10--manual-schema-registration---demo-no-auto-register)
 + [3.0 Cleanup](#30-cleanup)
 + [4.0 Notes](#40-notes)
 + [5.0 Resources](#50-resources)
@@ -71,7 +72,7 @@ cc-python-dynamic_static-protobuf-example/
 │   ├── kafka_protobuf_serdes.py     # KafkaProtobufSerializer & KafkaProtobufDeserializer
 │   ├── kafka_helpers.py             # ensure_topics(), kafka_produce(), kafka_consume_one()
 │   ├── field_encryption.py          # FieldEncryptor & get_encrypted_fields() — AES-256-GCM CSFLE
-│   ├── demos.py                     # All nine demo functions (demo_basic … demo_csfle)
+│   ├── demos.py                     # All ten demo functions (demo_basic … demo_no_auto_register)
 │   ├── main.py                      # Thin entry point — wires config, SR client, and demo dispatch
 │   └── generated_pb2/               # Auto-generated protoc stubs (gitignored, created by --use-protoc)
 ├── schemas                          # Proto3 schema definitions (gitignored, used by --use-protoc)
@@ -84,6 +85,7 @@ cc-python-dynamic_static-protobuf-example/
 │   ├── Payment.proto                 # Payment message (subject name strategies)
 │   ├── SensitiveRecord.proto         # CSFLE example with PII fields
 │   ├── ExampleMessage.proto          # General-purpose example
+│   ├── Invoice.proto                 # Manual registration example (no-auto-register demo)
 │   └── evolution
 │       ├── MyRecord_v1.proto         # Schema evolution v1 (id, amount)
 │       └── MyRecord_v2.proto         # Schema evolution v2 (+ customer_id)
@@ -256,6 +258,7 @@ flowchart TB
         D7["Demo 7 · Schema Types\nspecific vs DynamicMessage"]
         D8["Demo 8 · Subject Strategies\npayments-{run_id}"]
         D9["Demo 9 · CSFLE\nfield-level encryption\ncsfle-{run_id}"]
+        D10["Demo 10 · Manual Registration\nauto_register=False\ninvoices-{run_id}"]
     end
 
     %% ── Confluent Cloud ─────────────────────────────────────────────────
@@ -298,7 +301,7 @@ flowchart TB
     class CC_SR,CC_KAFKA cloud
     class SRC,SERDES core
     class KAFKA_H,SCHEMA,COMPILED helper
-    class DEMOS,D1,D2,D3,D4,D5,D6,D7,D8,D9 demo
+    class DEMOS,D1,D2,D3,D4,D5,D6,D7,D8,D9,D10 demo
     class WIRE,ENC,DEC wire
     class Boot,UTIL,CONST boot
     classDef csfle    fill:#8b1a1a,color:#fff,stroke:#8b1a1a
@@ -585,7 +588,7 @@ Schema Registry code. Only used when running with `--mode full`.
 
 #### **1.8.10 `demos.py`**
 
-Contains all nine demo functions extracted from the former monolithic `main.py`.
+Contains all ten demo functions extracted from the former monolithic `main.py`.
 Each function receives a `SchemaRegistryClient`, an optional Kafka config dict
 (for `--mode full`), the `run_id` suffix, an optional `save_dir` path, and a
 `use_protoc` flag. When `use_protoc` is `True`, demos use `load_compiled_message()`
@@ -605,6 +608,7 @@ files to the specified directory. The module has its own logger via
 | `demo_types()` | 7 — Schema Types |
 | `demo_strategies()` | 8 — Subject Name Strategies |
 | `demo_csfle()` | 9 — Client-Side Field Level Encryption |
+| `demo_no_auto_register()` | 10 — Manual Schema Registration (`auto_register=False`) |
 
 ---
 
@@ -682,7 +686,7 @@ This envelope is what makes Schema Registry-aware consumers (in any language) ab
 ```bash
 ./run-demo.sh --profile=<SSO_PROFILE_NAME> \
               --mode=<schema-only|full> \
-              [--demo=<all|basic|delete|evolution|oneof|null|compat|types|strategies|csfle>] \
+              [--demo=<all|basic|delete|evolution|oneof|null|compat|types|strategies|csfle|no-auto-register>] \
               [--run-id=<any string, e.g. "test1">] \
               [--save-schemas=<directory>] \
               [--use-protoc]
@@ -692,7 +696,7 @@ This envelope is what makes Schema Registry-aware consumers (in any language) ab
 |----------|----------|-------------|---------|-------------|
 | `--profile` | ✅ | --- | --- | The AWS SSO profile name. Passed directly to `aws sso login` and `aws2-wrap` for authentication, and used to resolve `AWS_REGION`, `AWS_ACCESS_KEY_ID`, `AWS_SECRET_ACCESS_KEY`, and `AWS_SESSION_TOKEN`, which are then exported as `TF_VAR_aws_region`, `TF_VAR_aws_access_key_id`, `TF_VAR_aws_secret_access_key`, and `TF_VAR_aws_session_token` for Terraform, respectively. |
 | `--mode` | ✅ | `schema-only`, `full` | `schema-only` | SR-only or full Kafka round-trip |
-| `--demo` | ❌ | `all` `basic` `delete` `evolution` `oneof` `null` `compat` `types` `strategies` `csfle` | `all` | Which demo to run |
+| `--demo` | ❌ | `all` `basic` `delete` `evolution` `oneof` `null` `compat` `types` `strategies` `csfle` `no-auto-register` | `all` | Which demo to run |
 | `--run-id` | ❌ | any string | random 8-char UUID prefix | Appended to every topic and subject name to prevent collisions across runs |
 | `--save-schemas` | ❌ | directory path | disabled | Save generated `.proto` schema files to the given directory (created if needed) |
 | `--use-protoc` | ❌ | flag (no value) | disabled | Use protoc-compiled `_pb2.py` stubs instead of dynamic runtime descriptors. Requires `protoc` on `PATH` (`brew install protobuf`). |
@@ -794,6 +798,27 @@ visible), and deserialized with decryption (plaintext restored). Requires
 **Topics:** `csfle-{run_id}`
 **Subjects:** `csfle-{run_id}-value`
 
+#### **2.1.10 Demo 10 — Manual Schema Registration (`--demo no-auto-register`)**
+
+Demonstrates the `auto_register=False` serializer mode, where schemas must be
+pre-registered before any produce calls. The demo walks through three steps:
+
+1. **Step 1** — Manually registers an `Invoice` schema under `invoices-{run_id}-value`
+   via `sr.register()` and prints the returned `schema_id`.
+2. **Step 2** — Creates a `KafkaProtobufSerializer(sr, auto_register=False)`,
+   serializes an invoice record, and performs a round-trip deserialize (with an
+   optional Kafka produce/consume in `--mode full`).
+3. **Step 3** — Shows the expected `RuntimeError` when the same serializer tries
+   to produce to an *unregistered* subject (`unknown-{run_id}`), proving that
+   `auto_register=False` enforces strict governance.
+
+The demo closes with a reference box explaining when to use `auto_register=False`
+in production (CI/CD-managed schemas, read-only producer credentials, strict
+schema governance).
+
+**Topics:** `invoices-{run_id}`
+**Subjects:** `invoices-{run_id}-value`
+
 ---
 
 ## **3.0 Cleanup**
@@ -808,7 +833,7 @@ confluent schema-registry subject list \
   | xargs -I{} confluent schema-registry subject delete --subject {} --force
 
 # Delete Kafka topics
-for topic in testproto transactions-proto all-events nullables payments csfle; do
+for topic in testproto transactions-proto all-events nullables payments csfle invoices; do
   confluent kafka topic delete "${topic}-<run_id>"
 done
 ```
@@ -840,4 +865,3 @@ done
 - [Confluent Protobuf SerDes documentation](https://docs.confluent.io/cloud/current/sr/fundamentals/serdes-develop/serdes-protobuf.html)
 - [Protocol Buffers (or Protobuf for short) documentation](https://developers.google.com/protocol-buffers/docs/overview)
 - [Protect Sensitive Data Using Client-Side Field Level Encryption on Confluent Cloud](https://docs.confluent.io/cloud/current/security/encrypt/csfle/overview.html#protect-sensitive-data-using-client-side-field-level-encryption-on-ccloud)
-  

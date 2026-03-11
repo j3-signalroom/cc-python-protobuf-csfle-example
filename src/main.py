@@ -15,6 +15,7 @@ from demos import (
     demo_types,
     demo_strategies,
     demo_csfle,
+    demo_no_auto_register,
 )
 
 
@@ -93,6 +94,7 @@ def main() -> None:
             f"nullables-{run_id}",
             f"payments-{run_id}",
             f"csfle-{run_id}",
+            f"invoices-{run_id}",
         ]
         logger.info("\n[Admin] Ensuring topics exist …")
         ensure_topics(kafka_cfg, required_topics)
@@ -125,6 +127,9 @@ def main() -> None:
 
     if run_all or args.demo == "csfle":
         demo_csfle(sr, kafka_cfg, run_id, cfg.get("aws_kms_key_arn", ""), save_dir, use_protoc)
+
+    if run_all or args.demo == "no-auto-register":
+        demo_no_auto_register(sr, kafka_cfg, run_id, save_dir, use_protoc)
 
     logger.info(f"\n{'─' * 100}")
     logger.info(f"  Done. All topics/subjects use suffix '-{run_id}'.")
