@@ -72,7 +72,7 @@ cc-python-dynamic_precompiled-protobuf-example/
 │   ├── proto_schema.py              # ProtoSchema Protocol — common interface for dynamic & compiled schemas
 │   ├── dynamic_protobuf_helpers.py  # ProtoMessage & ProtoField — dynamic proto3 schema builders
 │   ├── compiled_protobuf_helpers.py # CompiledProtoMessage, compile_protos(), load_compiled_message() — protoc stubs
-│   ├── custom_protobuf_serdes.py     # CustomProtobufSerializer & CustomProtobufDeserializer
+│   ├── custom_protobuf_serdes.py    # CustomProtobufSerializer & CustomProtobufDeserializer
 │   ├── kafka_helpers.py             # ensure_topics(), kafka_produce(), kafka_consume_one()
 │   ├── demos.py                     # All ten demo functions (demo_basic … demo_no_auto_register)
 │   ├── main.py                      # Thin entry point — wires config, SR client, and demo dispatch
@@ -90,7 +90,7 @@ cc-python-dynamic_precompiled-protobuf-example/
 │   │   └── evolution
 │   │       ├── MyRecord_v1.proto    # Schema evolution v1 (id, amount)
 │   │       └── MyRecord_v2.proto    # Schema evolution v2 (+ customer_id)
-│   └── generated_pb2/              # Auto-generated protoc stubs (gitignored, created by --use-protoc)
+│   └── generated_pb2/               # Auto-generated protoc stubs (gitignored, created by --use-protoc)
 ├── terraform                        # Infrastructure as Code — AWS KMS key provisioning for CSFLE
 │   ├── main.tf                      # KMS key + alias resources with IAM policy for CSFLE operations
 │   ├── providers.tf                 # AWS provider configuration (region, credentials)
