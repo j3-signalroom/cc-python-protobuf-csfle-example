@@ -67,6 +67,8 @@ schema_registry_url=""
 sr_api_key=""
 sr_api_secret=""
 
+aws_kms_key_arn=""
+
 # Get the arguments passed by shift to remove the first word
 # then iterate over the rest of the arguments
 for arg in "$@" # $@ sees arguments as separate words
@@ -106,6 +108,9 @@ do
         "--sr-api-secret="*)
             arg_length=16
             sr_api_secret=${arg:$arg_length:$(expr ${#arg} - $arg_length)};;
+        "--help"|"-h")
+            uv run python src/main.py --help
+            exit 0;;
         *)
             echo
             print_error "(Error Message 001)  You included an invalid argument: $arg"
@@ -264,12 +269,11 @@ POLICY
         --region "$AWS_REGION"
 
     # Export the KMS key ARN for the CSFLE demo
-    export AWS_KMS_KEY_ARN=$(aws kms describe-key \
+    aws_kms_key_arn=$(aws kms describe-key \
         --key-id "$KMS_KEY_ID" \
         --region "$AWS_REGION" \
         --query "KeyMetadata.Arn" \
         --output text)
-    print_info "AWS_KMS_KEY_ARN=${AWS_KMS_KEY_ARN}"
     print_info "KMS KEK provisioned successfully!"
 fi
 
@@ -279,7 +283,8 @@ printf "BOOTSTRAP_SERVERS=\"${bootstrap_servers}\"\
 \nKAFKA_API_SECRET=\"${kafka_api_secret}\"\
 \nSCHEMA_REGISTRY_URL=\"${schema_registry_url}\"\
 \nSR_API_KEY=\"${sr_api_key}\"\
-\nSR_API_SECRET=\"${sr_api_secret}\"" > .env
+\nSR_API_SECRET=\"${sr_api_secret}\"\
+\nAWS_KMS_KEY_ARN=\"${aws_kms_key_arn}\"" > .env
 
 # Build the argument list for the demo script
 cmd_args="--mode $mode --demo $demo"

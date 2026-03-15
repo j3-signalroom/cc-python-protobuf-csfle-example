@@ -84,21 +84,62 @@ def get_config() -> tuple[dict, list[str]]:
 
 def parse_args() -> argparse.Namespace:
     p = argparse.ArgumentParser(
-        description="Confluent Cloud Protobuf SerDes Demo",
+        description="Confluent Cloud Python Dynamic or Precompiled Protobuf Examples",
         formatter_class=argparse.RawDescriptionHelpFormatter,
         epilog=textwrap.dedent("""\
-            Quick start:
-              # Put credentials in .env, then:
-              python confluent_protobuf_demo.py --mode schema-only
+            flags:
+              Required:
+                --mode=<MODE>               Run mode: "schema-only" or "full" (default: schema-only)
+                --demo=<DEMO>               Demo to run: all, basic, delete, evolution, oneof,
+                                            null, compat, types, strategies, csfle,
+                                            no-auto-register (default: all)
+                --schema-registry-url=<URL> Confluent Schema Registry endpoint URL
+                --sr-api-key=<KEY>          Schema Registry API key
+                --sr-api-secret=<SECRET>    Schema Registry API secret
 
-            With Kafka:
-              python confluent_protobuf_demo.py --mode full
+              Required for --mode=full:
+                --bootstrap-servers=<SERVERS>  Kafka bootstrap servers
+                --kafka-api-key=<KEY>          Kafka cluster API key
+                --kafka-api-secret=<SECRET>    Kafka cluster API secret
 
-            Single demo:
-              python confluent_protobuf_demo.py --mode schema-only --demo evolution
+              Required for --demo=csfle or --demo=all:
+                --profile=<AWS_SSO_PROFILE> AWS SSO profile for KMS key provisioning
 
-            Save .proto schemas to disk:
-              python confluent_protobuf_demo.py --mode schema-only --save-schemas ./schemas
+              Optional:
+                --run-id=<RUN_ID>           Unique suffix for topic/subject names to prevent
+                                            collisions (default: random 8-char UUID)
+                --save-schemas=<DIR>        Save generated .proto schemas to DIR, created if
+                                            needed (default: disabled)
+                --use-protoc                Use protoc-compiled stubs instead of dynamic
+                                            runtime Protobuf; requires protoc on PATH
+
+            examples:
+              Quick start (schema-only):
+                ./run-demo.sh --mode=schema-only --demo=all \\
+                  --profile=<AWS_SSO_PROFILE> --schema-registry-url=<URL> \\
+                  --sr-api-key=<KEY> --sr-api-secret=<SECRET>
+
+              With Kafka:
+                ./run-demo.sh --mode=full --demo=all \\
+                  --profile=<AWS_SSO_PROFILE> --schema-registry-url=<URL> \\
+                  --sr-api-key=<KEY> --sr-api-secret=<SECRET> \\
+                  --bootstrap-servers=<SERVERS> --kafka-api-key=<KEY> \\
+                  --kafka-api-secret=<SECRET>
+
+              Single demo:
+                ./run-demo.sh --mode=schema-only --demo=evolution \\
+                  --profile=<AWS_SSO_PROFILE> --schema-registry-url=<URL> \\
+                  --sr-api-key=<KEY> --sr-api-secret=<SECRET>
+
+              Save .proto schemas to disk:
+                ./run-demo.sh --mode=schema-only --demo=all --save-schemas=./schemas \\
+                  --profile=<AWS_SSO_PROFILE> --schema-registry-url=<URL> \\
+                  --sr-api-key=<KEY> --sr-api-secret=<SECRET>
+
+              Use precompiled Protobuf stubs:
+                ./run-demo.sh --mode=schema-only --demo=basic --use-protoc \\
+                  --schema-registry-url=<URL> --sr-api-key=<KEY> \\
+                  --sr-api-secret=<SECRET>
         """),
     )
     p.add_argument("--mode", choices=["schema-only", "full"], default="schema-only")

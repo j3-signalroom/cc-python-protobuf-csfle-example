@@ -404,27 +404,23 @@ into a local `.venv`. No manual `pip install` is needed.
 
 ### **1.6 Configuration**
 
-Create a `.env` file in the project root (never commit it):
+> **Do not create `.env` manually.** The `run-demo.sh` script generates it automatically from the command-line arguments you supply (see [2.0 Running the demos](#20-running-the-demos)). This ensures credentials are wired correctly and AWS KMS provisioning is handled before the Python entry point starts.
+
+The generated `.env` file (never committed) contains:
 
 ```dotenv
 # Kafka cluster — only required for --mode full
-BOOTSTRAP_SERVERS=pkc-xxxxx.us-east1.gcp.confluent.cloud:9092
-KAFKA_API_KEY=your_kafka_api_key
-KAFKA_API_SECRET=your_kafka_api_secret
+BOOTSTRAP_SERVERS="..."
+KAFKA_API_KEY="..."
+KAFKA_API_SECRET="..."
 
 # Schema Registry — always required
-SCHEMA_REGISTRY_URL=https://psrc-xxxxx.us-east-2.aws.confluent.cloud
-SR_API_KEY=your_sr_api_key
-SR_API_SECRET=your_sr_api_secret
+SCHEMA_REGISTRY_URL="..."
+SR_API_KEY="..."
+SR_API_SECRET="..."
 
-# AWS KMS — required for --demo csfle (or --demo all)
-AWS_KMS_KEY_ARN=arn:aws:kms:us-east-1:123456789012:key/your-key-id
-
-# AWS credentials — required for CSFLE (auto-populated by run-demo.sh when using --profile)
-AWS_REGION=us-east-1
-AWS_ACCESS_KEY_ID=your_aws_access_key_id
-AWS_SECRET_ACCESS_KEY=your_aws_secret_access_key
-AWS_SESSION_TOKEN=your_aws_session_token          # optional, needed for SSO/temporary credentials
+# AWS KMS — auto-populated by run-demo.sh when --demo csfle or --demo all
+AWS_KMS_KEY_ARN="..."
 ```
 
 `python-dotenv` loads this automatically at module startup via `load_dotenv()`;
@@ -682,6 +678,8 @@ This envelope is what makes Schema Registry-aware consumers (in any language) ab
 
 ## **2.0 Running the demos**
 
+> **Always use `run-demo.sh`** — it is the only supported way to run the demos. The script validates arguments, authenticates to AWS SSO (when needed), provisions the KMS KEK for the CSFLE demo, generates the `.env` file, and then invokes `uv run python src/main.py` with the correct flags. Do not run `src/main.py` directly.
+
 ```bash
 ./run-demo.sh --mode=<schema-only|full> \
               --demo=<all|basic|delete|evolution|oneof|null|compat|types|strategies|csfle|no-auto-register> \
@@ -848,7 +846,7 @@ schema governance).
 
 ## **3.0 AWS KMS Provisioning**
 
-The `run-demo.sh` script provisions the AWS KMS key used as the Key Encryption Key (KEK) for the CSFLE demo using **AWS CLI** commands directly — no Terraform required.
+The `run-demo.sh` script provisions the AWS KMS key used as the Key Encryption Key (KEK) for the CSFLE demo using **AWS CLI** commands directly.
 
 ### **3.1 What it provisions**
 
