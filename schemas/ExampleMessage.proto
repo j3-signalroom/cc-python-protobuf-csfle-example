@@ -1,7 +1,0 @@
-syntax = "proto3";
-
-message ExampleMessage {
-  optional string name = 1;
-  optional int32 age = 2;
-  optional bool isActive = 3;
-}

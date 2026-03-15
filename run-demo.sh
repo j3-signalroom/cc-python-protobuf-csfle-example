@@ -111,6 +111,22 @@ then
     export AWS_REGION=$(aws configure get region $AWS_PROFILE)
 fi
 
+# ── Terraform: provision the KMS KEK when CSFLE demo is selected ──────────
+if [ "$demo" = "csfle" ] || [ "$demo" = "all" ]; then
+    print_step "Provisioning KMS KEK via Terraform..."
+
+    if [ ! -d "$TERRAFORM_DIR" ]; then
+        print_error "Terraform directory not found: $TERRAFORM_DIR"
+        exit 1
+    fi
+
+    terraform -chdir="$TERRAFORM_DIR" init -input=false
+    terraform -chdir="$TERRAFORM_DIR" apply -auto-approve -input=false
+
+    # Export the KMS key ARN from Terraform output for the CSFLE demo
+    export AWS_KMS_KEY_ARN=$(terraform -chdir="$TERRAFORM_DIR" output -raw kms_key_arn)
+    print_info "AWS_KMS_KEY_ARN=${AWS_KMS_KEY_ARN}"
+fi
 
 # Build the argument list for the demo script
 cmd_args="--mode $mode --demo $demo"
