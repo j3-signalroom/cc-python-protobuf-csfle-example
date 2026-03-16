@@ -87,7 +87,7 @@ def example_basic(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str,
 
     if kafka_cfg:
         kafka_produce(kafka_cfg, topic, "testkey", wire)
-        raw = kafka_consume_one(kafka_cfg, topic, f"demo-basic-{run_id}")
+        raw = kafka_consume_one(kafka_cfg, topic, f"example-basic-{run_id}")
         decoded = deser.deserialize(raw) if raw else decoded
         logger.info(f"\nConsumed from Kafka: {decoded}")
     else:
@@ -209,7 +209,7 @@ def example_evolution(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: 
     if kafka_cfg:
         kafka_produce(kafka_cfg, topic, "k1", w1)
         kafka_produce(kafka_cfg, topic, "k2", w2)
-        grp = f"demo-evo-{run_id}"
+        grp = f"example-evo-{run_id}"
         for _ in range(2):
             raw = kafka_consume_one(kafka_cfg, topic, grp)
             if raw:
@@ -317,7 +317,7 @@ def example_oneof(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str,
     if kafka_cfg:
         for wire in wires:
             kafka_produce(kafka_cfg, topic, str(uuid.uuid4()), wire)
-        grp = f"demo-oneof-{run_id}"
+        grp = f"example-oneof-{run_id}"
         for _ in range(len(events)):
             raw = kafka_consume_one(kafka_cfg, topic, grp)
             if raw:
@@ -431,7 +431,7 @@ def example_types(sr: SchemaRegistryClient) -> None:
     derive.type = true                       →  derive_type=True
     (neither)                                →  returns plain dict  (DynamicMessage)
 
-  latest.cache.size / latest.cache.ttl.sec  →  handled by self._cache in this demo
+  latest.cache.size / latest.cache.ttl.sec  →  handled by self._cache in this example
 """)
 
 
@@ -512,7 +512,7 @@ def example_csfle(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str,
         path = sensitive_record.save_schema(save_dir)
         logger.info(f"  Saved → {path}")
 
-    kek_name = f"demo-kek-{run_id}"
+    kek_name = f"example-kek-{run_id}"
     topic    = f"csfle-{run_id}"
     subject  = f"{topic}-value"
 
@@ -595,7 +595,7 @@ def example_csfle(sr: SchemaRegistryClient, kafka_cfg: dict | None, run_id: str,
     # ── 10. Kafka round-trip (if --mode full) ─────────────────────────
     if kafka_cfg:
         kafka_produce(kafka_cfg, topic, "user-001", wire)
-        raw = kafka_consume_one(kafka_cfg, topic, f"demo-csfle-{run_id}")
+        raw = kafka_consume_one(kafka_cfg, topic, f"example-csfle-{run_id}")
         if raw:
             dec = protobuf_deserializer(raw, SerializationContext(topic, MessageField.VALUE))
             logger.info(f"\nKafka decrypted: {MessageToDict(dec, preserving_proto_field_name=True)}")
@@ -672,7 +672,7 @@ def example_no_auto_register(sr: SchemaRegistryClient, kafka_cfg: dict | None, r
 
     if kafka_cfg:
         kafka_produce(kafka_cfg, topic, "inv-001", wire)
-        raw = kafka_consume_one(kafka_cfg, topic, f"demo-no-auto-{run_id}")
+        raw = kafka_consume_one(kafka_cfg, topic, f"example-no-auto-{run_id}")
         decoded = deser.deserialize(raw) if raw else decoded
         logger.info(f"\n  Consumed from Kafka: {decoded}")
     else:

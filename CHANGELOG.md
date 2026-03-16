@@ -8,6 +8,7 @@ The format is base on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), 
 ### Changed
 - Issue [`#63`](https://github.com/j3-signalroom/cc-python-dynamic_precompiled-protobuf-examples/issues/63)
 - Issue [`#65`](https://github.com/j3-signalroom/cc-python-dynamic_precompiled-protobuf-examples/issues/65)
+- Issue [`#67`](https://github.com/j3-signalroom/cc-python-dynamic_precompiled-protobuf-examples/issues/67)
 
 ## [0.06.00.000] - 2026-03-15
 ### Added

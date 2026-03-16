@@ -75,7 +75,7 @@ def main() -> None:
         compile_protos()
 
     logger.info("=" * 100)
-    logger.info("  Confluent Cloud Python Protobuf CSFLE (Client-Side Field-Level Encryption) Example Demo(s)")
+    logger.info("  Confluent Cloud Python Protobuf CSFLE (Client-Side Field-Level Encryption) Examples")
     proto_mode = "protoc (compiled stubs)" if use_protoc else "dynamic (runtime descriptors)"
     logger.info(f"  Python {sys.version.split()[0]}  |  mode={args.mode}  |  run_id={run_id}  |  protobuf={proto_mode}")
     logger.info(f"  SR:    {cfg['sr_url']}")
