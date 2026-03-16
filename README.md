@@ -400,6 +400,8 @@ into a local `.venv`. No manual `pip install` is needed.
 > `confluent-kafka` is imported inside a `try/except` at startup; if it is
 > absent the app still runs normally in `--mode schema-only`.
 
+> `protobuf 6.30.2` is used because `protobuf 7.x` changed the FieldDescriptor API, removing the `.label` attribute that `confluent-kafka 2.13.2` uses internally. This is a known incompatibility, so downgrading to the latest 6.x version is necessary until `confluent-kafka 2.13.3` (or later) releases a compatible update.
+
 ---
 
 ### **1.6 Configuration**
