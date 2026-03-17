@@ -4,6 +4,10 @@ All notable changes to this project will be documented in this file.
 The format is base on [Keep a Changelog](https://keepachangelog.com/en/1.1.0/), and this project adheres to [Semantic Versioning](https://semver.org/spec/v2.0.0.html).
 
 
+## [0.10.00.000] - 2026-03-17
+### Changed
+- Issue [`#77`](https://github.com/j3-signalroom/cc-python-dynamic_precompiled-protobuf-examples/issues/77)
+
 ## [0.09.00.000] - 2026-03-16
 ### Added
 - Issue [`#74`](https://github.com/j3-signalroom/cc-python-dynamic_precompiled-protobuf-examples/issues/74)
